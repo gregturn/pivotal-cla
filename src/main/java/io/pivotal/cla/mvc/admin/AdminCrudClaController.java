@@ -42,7 +42,7 @@ public class AdminCrudClaController extends AdminClaController {
 
 	@RequestMapping("/admin/cla/")
 	public String listClas(Map<String, Object> model) throws Exception {
-		model.put("clas", findAllClas());
+		model.put("clas", findAllClass());
 		return "admin/cla/index";
 	}
 

@@ -28,10 +28,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
+import lombok.SneakyThrows;
 import org.eclipse.egit.github.core.Comment;
 import org.eclipse.egit.github.core.CommitStatus;
 import org.eclipse.egit.github.core.PullRequest;
-import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.RepositoryHook;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.client.GitHubClient;
@@ -40,6 +42,7 @@ import org.eclipse.egit.github.core.service.MarkdownService;
 import org.eclipse.egit.github.core.service.OrganizationService;
 import org.eclipse.egit.github.core.service.PullRequestService;
 import org.eclipse.egit.github.core.service.RepositoryService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,8 +51,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.pivotal.cla.config.ClaOAuthConfig;
 import io.pivotal.cla.config.OAuthClientCredentials;
@@ -61,8 +62,6 @@ import io.pivotal.cla.egit.github.core.service.ContextCommitService;
 import io.pivotal.cla.egit.github.core.service.EmailService;
 import io.pivotal.cla.mvc.util.UrlBuilder;
 import io.pivotal.cla.service.MigratePullRequestStatusRequest;
-import lombok.Data;
-import lombok.SneakyThrows;
 
 @Component
 public class MylynGitHubApi implements GitHubApi {
@@ -87,16 +86,15 @@ public class MylynGitHubApi implements GitHubApi {
 	@Override
 	@SneakyThrows
 	public List<String> findRepositoryNames(String accessToken) {
-		GitHubClient client = createClient(accessToken);
 
-		RepositoryService service = new RepositoryService(client);
-		List<Repository> repositories = service.getRepositories();
-		List<String> repoSlugs = new ArrayList<>();
-		for (Repository r : repositories) {
-			org.eclipse.egit.github.core.User owner = r.getOwner();
-			repoSlugs.add(owner.getLogin() + "/" + r.getName());
-		}
-		return repoSlugs;
+		RepositoryService service = new RepositoryService(createClient(accessToken));
+
+		return service.getRepositories().stream()
+				.filter(r ->
+					service.getHooks(RepositoryId.createFromId(Long.toString(r.getId()))).stream()
+							.noneMatch(repositoryHook -> repositoryHook.getUrl().contains("cla.pivotal.io")))
+				.map(r -> r.getOwner().getLogin() + "/" + r.getName())
+				.collect(Collectors.toList());
 	}
 
 	private GitHubClient createClient(String accessToken) {

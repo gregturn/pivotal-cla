@@ -49,7 +49,7 @@ public class AdminLinkClaController extends AdminClaController {
 	@RequestMapping("/admin/cla/link")
 	public String linkClaForm(@AuthenticationPrincipal User user, Map<String, Object> model) throws Exception {
 		model.put("linkClaForm", new LinkClaForm());
-		model.put("licenses", findPrimaryClas());
+		model.put("licenses", findPrimaryClass());
 		model.put("accessTokensUrl", ACCESS_TOKENS_URL);
 		return "admin/cla/link";
 	}
@@ -64,7 +64,7 @@ public class AdminLinkClaController extends AdminClaController {
 	public String linkCla(@AuthenticationPrincipal User user, HttpServletRequest request, Map<String, Object> model, @Valid LinkClaForm linkClaForm,
 			BindingResult result, RedirectAttributes attrs) throws Exception {
 		if (result.hasErrors()) {
-			model.put("licenses", findPrimaryClas());
+			model.put("licenses", findPrimaryClass());
 			model.put("accessTokensUrl", ACCESS_TOKENS_URL);
 			return "admin/cla/link";
 		}

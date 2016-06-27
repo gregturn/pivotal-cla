@@ -43,12 +43,12 @@ public class AdminClaController {
 	@Autowired
 	protected ClaService claService;
 
-	protected List<ContributorLicenseAgreement> findPrimaryClas() {
+	protected List<ContributorLicenseAgreement> findPrimaryClass() {
 		List<ContributorLicenseAgreement> result = claRepo.findByPrimaryTrue();
 		return sort(result);
 	}
 
-	protected List<ContributorLicenseAgreement> findAllClas() {
+	protected List<ContributorLicenseAgreement> findAllClass() {
 		List<ContributorLicenseAgreement> result = new ArrayList<>();
 		claRepo.findAll().forEach(result::add);
 		return sort(result);
